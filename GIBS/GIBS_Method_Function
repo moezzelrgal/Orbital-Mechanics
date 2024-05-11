@@ -1,0 +1,64 @@
+%***********************************************************************
+%* This function is provided under the license: CC BY-NC-SA 4.0        * 
+%* License details: https://creativecommons.org/licenses/by-nc-sa/4.0/ *
+%* Author: Mohammed Ezzelrgal                                          *
+%***********************************************************************
+% The function determines the orbital elements for a given arrangement of position vectors
+% Inputs:
+%   r1, r2, r3: position vectors of three points in space (3x1 arrays)
+% Outputs:
+%   a: semi-major axis of the orbit
+%   e: eccentricity of the orbit
+%   RAAN: Right Ascension of the Ascending Node
+%   W: Argument of Perigee
+%   t: true anomaly
+%   i: inclination
+
+function [a,e,RAAN,W,t,i] = GIBS(r1,r2,r3)
+% Calculate the normal vector to the orbital plane
+N = (norm(r1)*(cross(r2,r3)))+(norm(r2)*(cross(r3,r1)))+(norm(r3)*(cross(r1,r2)));
+% Calculate the orbital plane vector
+D = (cross(r1,r2))+(cross(r2,r3))+(cross(r3,r1));
+% Calculate the vector S
+S = (r1*(norm(r2)-norm(r3))) + (r2*(norm(r3)-norm(r1))) + r3*(norm(r1)-norm(r2));
+
+% Constants
+M = 5.972 * 10^24 ;
+G = 9.80665 ;
+mu = M*G;
+
+% Calculate the semi-latus rectum
+a = (((cross(D,r2))/norm(r2))+S);
+b = sqrt(mu/dot(N,D));
+v2 = b*a;
+
+% Calculate the radius vector magnitude
+r = norm(r2);
+
+% Calculate the specific angular momentum vector
+h = cross(r2,v2);
+k = [0 0 1];
+I = [1 0 0];
+% Calculate the inclination
+i = acos((dot(k,h))/(norm(k)*norm(h)));
+
+% Calculate the node vector
+n = cross(k,h);
+
+% Calculate the eccentricity vector
+e = ((cross(v2,h))/r) - (r2/r);
+
+% Calculate the Right Ascension of the Ascending Node
+RAAN = acos((dot(n,e))/(norm(n)*norm(e)));
+
+% Calculate the argument of perigee
+W = acos((dot(n,e))/(norm(n)*norm(e)));
+
+% Calculate the true anomaly
+t = acos((cross(e,r2))/norm(e)*r);
+
+% Calculate the semi-major axis
+E = ((norm(v2))^2)/2 - mu/r ;
+a = - (mu) / (2*E) ;
+
+end
